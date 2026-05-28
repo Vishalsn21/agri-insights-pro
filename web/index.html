@@ -1,0 +1,1656 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>AgriInsights Pro — Agricultural Intelligence Dashboard</title>
+
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/bootstrap/5.3.3/css/bootstrap.min.css" />
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/bootstrap-icons/1.11.3/font/bootstrap-icons.min.css" />
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@400;600;700&family=DM+Sans:wght@300;400;500;600&family=DM+Mono:wght@400;500&display=swap" rel="stylesheet" />
+
+  <style>
+    /* ═══════════════════════════════════════════════════════════════
+       DESIGN SYSTEM — Earthy-luxury agricultural palette
+       ═══════════════════════════════════════════════════════════════ */
+    :root {
+      --soil:       #2C1F0E;
+      --bark:       #4A3520;
+      --moss:       #3D6B35;
+      --leaf:       #5A9348;
+      --sage:       #8DB87A;
+      --harvest:    #D4A843;
+      --wheat:      #E8C96A;
+      --parchment:  #F5EDD8;
+      --cream:      #FBF7EF;
+      --fog:        #EDF2E8;
+      --sky:        #6BA3BE;
+      --dusk:       #4A7A94;
+      --error:      #C0392B;
+      --text-main:  #1C1208;
+      --text-muted: #6B5C42;
+      --border:     #D8CEBD;
+      --card-bg:    #FFFFFF;
+      --shadow:     0 2px 20px rgba(44,31,14,.08);
+      --shadow-lg:  0 8px 40px rgba(44,31,14,.14);
+      --radius:     12px;
+      --radius-sm:  8px;
+      --transition: 0.25s cubic-bezier(.4,0,.2,1);
+    }
+
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+    html { scroll-behavior: smooth; }
+
+    body {
+      font-family: 'DM Sans', sans-serif;
+      background: var(--cream);
+      color: var(--text-main);
+      min-height: 100vh;
+      font-size: 15px;
+      line-height: 1.6;
+    }
+
+    /* ── Grain texture overlay ─────────────────────────────── */
+    body::before {
+      content: '';
+      position: fixed; inset: 0; z-index: 0; pointer-events: none;
+      background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 200 200' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='.9' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)' opacity='.03'/%3E%3C/svg%3E");
+      opacity: .4;
+    }
+
+    /* ── Top Navbar ────────────────────────────────────────── */
+    .navbar-agri {
+      background: var(--soil);
+      padding: 0 2rem;
+      height: 64px;
+      display: flex; align-items: center;
+      position: sticky; top: 0; z-index: 1000;
+      box-shadow: 0 2px 16px rgba(0,0,0,.3);
+    }
+
+    .navbar-brand-agri {
+      display: flex; align-items: center; gap: .75rem;
+      text-decoration: none;
+    }
+
+    .brand-icon {
+      width: 36px; height: 36px;
+      background: linear-gradient(135deg, var(--leaf), var(--harvest));
+      border-radius: 8px;
+      display: grid; place-items: center;
+      font-size: 18px; color: white;
+      flex-shrink: 0;
+    }
+
+    .brand-text {
+      font-family: 'Playfair Display', serif;
+      font-size: 1.25rem; font-weight: 700;
+      color: var(--parchment);
+      letter-spacing: -.01em;
+    }
+
+    .brand-text span { color: var(--harvest); }
+
+    .navbar-right {
+      margin-left: auto; display: flex; align-items: center; gap: 1rem;
+    }
+
+    .live-badge {
+      display: flex; align-items: center; gap: .4rem;
+      background: rgba(93,163,72,.15);
+      border: 1px solid rgba(93,163,72,.4);
+      border-radius: 20px; padding: .25rem .75rem;
+      font-size: .75rem; color: var(--sage);
+      font-weight: 500; letter-spacing: .04em;
+    }
+
+    .live-dot {
+      width: 6px; height: 6px;
+      border-radius: 50%; background: var(--leaf);
+      animation: pulse 2s infinite;
+    }
+
+    @keyframes pulse {
+      0%, 100% { opacity: 1; transform: scale(1); }
+      50%       { opacity: .5; transform: scale(1.3); }
+    }
+
+    .clock-display {
+      font-family: 'DM Mono', monospace;
+      font-size: .8rem; color: rgba(245,237,216,.6);
+    }
+
+    /* ── NEW: User Profile ──────────────────────────────────── */
+    .user-profile-btn {
+      display: flex; align-items: center; gap: 0.5rem;
+      color: var(--parchment); cursor: pointer;
+      padding: 0.4rem 0.8rem; border-radius: 20px;
+      background: rgba(255,255,255,0.05);
+      transition: background var(--transition);
+      font-size: 0.85rem; font-weight: 500;
+      border: 1px solid transparent;
+    }
+    .user-profile-btn:hover { background: rgba(255,255,255,0.1); border-color: rgba(255,255,255,0.2); }
+    
+    .dropdown-menu-custom {
+      background-color: var(--card-bg);
+      border: 1px solid var(--border);
+      border-radius: var(--radius-sm);
+      box-shadow: var(--shadow-lg);
+      font-size: 0.85rem;
+      font-family: 'DM Sans', sans-serif;
+    }
+    .dropdown-menu-custom .dropdown-item {
+      color: var(--text-main);
+      padding: 0.5rem 1rem;
+      transition: background var(--transition);
+    }
+    .dropdown-menu-custom .dropdown-item:hover { background-color: var(--fog); color: var(--soil); }
+    .dropdown-menu-custom .dropdown-divider { border-top: 1px solid var(--border); }
+
+    /* ── NEW: Market Ticker ─────────────────────────────────── */
+    .market-ticker-wrapper {
+      background: var(--text-main);
+      color: var(--parchment);
+      padding: 0.5rem 2rem;
+      font-family: 'DM Mono', monospace;
+      font-size: 0.8rem;
+      display: flex; align-items: center; gap: 1rem;
+      border-bottom: 1px solid rgba(255,255,255,0.1);
+      position: relative; z-index: 999;
+    }
+    .market-ticker-label {
+      color: var(--harvest); font-weight: 600; text-transform: uppercase;
+      letter-spacing: 0.05em; flex-shrink: 0; display:flex; align-items:center; gap:0.4rem;
+    }
+    .ticker-content { flex-grow: 1; overflow: hidden; white-space: nowrap; display: flex; align-items: center; }
+    .ticker-item { display: inline-block; margin-right: 2.5rem; }
+    .ticker-up { color: var(--sage); font-weight: 600; }
+    .ticker-down { color: #ff7675; font-weight: 600; }
+
+    /* ── Tab Navigation ─────────────────────────────────────── */
+    .tab-nav-wrapper {
+      background: var(--bark);
+      padding: 0 2rem;
+      overflow-x: auto;
+    }
+
+    .tab-nav {
+      display: flex; gap: 0; list-style: none;
+      white-space: nowrap;
+    }
+
+    .tab-nav .nav-link {
+      color: rgba(245,237,216,.6);
+      padding: .85rem 1.4rem;
+      font-size: .85rem; font-weight: 500;
+      border-bottom: 3px solid transparent;
+      border-radius: 0; letter-spacing: .02em;
+      transition: color var(--transition), border-color var(--transition);
+      display: flex; align-items: center; gap: .5rem;
+      cursor: pointer; text-decoration: none;
+    }
+
+    .tab-nav .nav-link:hover { color: var(--parchment); }
+
+    .tab-nav .nav-link.active {
+      color: var(--harvest);
+      border-bottom-color: var(--harvest);
+    }
+
+    /* ── Main Content Area ─────────────────────────────────── */
+    .main-content {
+      position: relative; z-index: 1;
+      padding: 2rem;
+      max-width: 1440px; margin: 0 auto;
+    }
+
+    .tab-pane { display: none; }
+    .tab-pane.active { display: block; animation: fadeInUp .3s ease; }
+
+    @keyframes fadeInUp {
+      from { opacity: 0; transform: translateY(12px); }
+      to   { opacity: 1; transform: translateY(0); }
+    }
+
+    /* ── Section Header ─────────────────────────────────────── */
+    .section-header {
+      margin-bottom: 1.75rem;
+    }
+
+    .section-tag {
+      display: inline-flex; align-items: center; gap: .4rem;
+      font-size: .7rem; font-weight: 600; letter-spacing: .1em;
+      text-transform: uppercase; color: var(--moss);
+      margin-bottom: .4rem;
+    }
+
+    .section-title {
+      font-family: 'Playfair Display', serif;
+      font-size: 1.75rem; font-weight: 700;
+      color: var(--soil); line-height: 1.2;
+    }
+
+    .section-sub {
+      color: var(--text-muted); font-size: .9rem; margin-top: .3rem;
+    }
+
+    /* ── Cards ──────────────────────────────────────────────── */
+    .card-agri {
+      background: var(--card-bg);
+      border: 1px solid var(--border);
+      border-radius: var(--radius);
+      box-shadow: var(--shadow);
+      transition: box-shadow var(--transition), transform var(--transition);
+    }
+
+    .card-agri:hover {
+      box-shadow: var(--shadow-lg);
+      transform: translateY(-2px);
+    }
+
+    .card-body-agri { padding: 1.5rem; }
+
+    .card-header-agri {
+      padding: 1.1rem 1.5rem .8rem;
+      border-bottom: 1px solid var(--border);
+      display: flex; align-items: center; justify-content: space-between;
+      flex-wrap: wrap; gap: .5rem;
+    }
+
+    .card-title-agri {
+      font-family: 'Playfair Display', serif;
+      font-size: 1rem; font-weight: 600;
+      color: var(--soil); display: flex; align-items: center; gap: .6rem;
+    }
+
+    .card-title-agri i { color: var(--leaf); }
+
+    /* ── Stat Cards ─────────────────────────────────────────── */
+    .stat-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fill, minmax(220px, 1fr));
+      gap: 1.25rem;
+      margin-bottom: 2rem;
+    }
+
+    .stat-card {
+      background: var(--card-bg);
+      border: 1px solid var(--border);
+      border-radius: var(--radius);
+      padding: 1.4rem;
+      position: relative; overflow: hidden;
+      transition: box-shadow var(--transition), transform var(--transition);
+    }
+
+    .stat-card:hover { box-shadow: var(--shadow-lg); transform: translateY(-3px); }
+
+    .stat-card::before {
+      content: '';
+      position: absolute; top: 0; left: 0; right: 0; height: 3px;
+    }
+
+    .stat-card.green::before  { background: linear-gradient(90deg, var(--leaf), var(--sage)); }
+    .stat-card.gold::before   { background: linear-gradient(90deg, var(--harvest), var(--wheat)); }
+    .stat-card.blue::before   { background: linear-gradient(90deg, var(--dusk), var(--sky)); }
+    .stat-card.earth::before  { background: linear-gradient(90deg, var(--bark), var(--soil)); }
+
+    .stat-icon {
+      width: 40px; height: 40px; border-radius: 10px;
+      display: grid; place-items: center;
+      font-size: 1.1rem; margin-bottom: .8rem;
+    }
+
+    .stat-icon.green  { background: rgba(90,147,72,.12); color: var(--leaf); }
+    .stat-icon.gold   { background: rgba(212,168,67,.12); color: var(--harvest); }
+    .stat-icon.blue   { background: rgba(107,163,190,.12); color: var(--dusk); }
+    .stat-icon.earth  { background: rgba(74,53,32,.1); color: var(--bark); }
+
+    .stat-value {
+      font-family: 'Playfair Display', serif;
+      font-size: 1.8rem; font-weight: 700;
+      color: var(--soil); line-height: 1;
+    }
+
+    .stat-label {
+      font-size: .8rem; color: var(--text-muted);
+      font-weight: 500; margin-top: .25rem;
+    }
+
+    /* ── Weather Widget ──────────────────────────────────────── */
+    .weather-hero {
+      background: linear-gradient(135deg, var(--dusk) 0%, var(--moss) 100%);
+      border-radius: var(--radius);
+      padding: 2rem;
+      color: white;
+      display: flex; align-items: center; justify-content: space-between;
+      flex-wrap: wrap; gap: 1.5rem;
+      margin-bottom: 1.5rem;
+      position: relative; overflow: hidden;
+    }
+
+    .weather-hero::after {
+      content: ''; position: absolute;
+      right: -20px; top: -40px;
+      width: 200px; height: 200px;
+      background: rgba(255,255,255,.05);
+      border-radius: 50%;
+    }
+
+    .weather-main { position: relative; z-index: 1; }
+
+    .weather-temp {
+      font-family: 'Playfair Display', serif;
+      font-size: 4.5rem; font-weight: 700;
+      line-height: 1; color: white;
+    }
+
+    .weather-condition {
+      font-size: 1.1rem; opacity: .85;
+      margin-top: .25rem;
+    }
+
+    .weather-location {
+      font-size: .8rem; opacity: .65;
+      display: flex; align-items: center; gap: .35rem;
+      margin-top: .5rem;
+    }
+
+    .weather-details {
+      display: flex; gap: 2rem; flex-wrap: wrap;
+      position: relative; z-index: 1;
+    }
+
+    .weather-detail-item {
+      text-align: center;
+    }
+
+    .weather-detail-val {
+      font-size: 1.3rem; font-weight: 600;
+    }
+
+    .weather-detail-lbl {
+      font-size: .7rem; opacity: .65; text-transform: uppercase;
+      letter-spacing: .06em;
+    }
+
+    .weather-icon-big { font-size: 5rem; opacity: .4; position: relative; z-index: 1; }
+
+    /* ── News Items ─────────────────────────────────────────── */
+    .news-item {
+      display: flex; gap: 1rem; padding: 1rem;
+      border-radius: var(--radius-sm);
+      cursor: pointer;
+      transition: background var(--transition);
+      text-decoration: none; color: inherit;
+    }
+
+    .news-item:hover { background: var(--fog); }
+
+    .news-num {
+      font-family: 'DM Mono', monospace;
+      font-size: .75rem; font-weight: 500;
+      color: var(--harvest); min-width: 24px;
+      padding-top: 2px;
+    }
+
+    .news-title {
+      font-size: .9rem; font-weight: 500;
+      color: var(--soil); line-height: 1.4;
+      margin-bottom: .3rem;
+    }
+
+    .news-meta {
+      font-size: .75rem; color: var(--text-muted);
+      display: flex; gap: .75rem;
+    }
+
+    .news-divider {
+      height: 1px; background: var(--border); margin: 0 1rem;
+    }
+
+    /* ── Chart containers ───────────────────────────────────── */
+    .chart-container {
+      position: relative;
+      padding: 1.5rem;
+    }
+
+    .chart-wrapper {
+      position: relative;
+    }
+
+    /* ── Crop filter pills ──────────────────────────────────── */
+    .filter-row {
+      display: flex; gap: .5rem; flex-wrap: wrap;
+      padding: 1rem 1.5rem;
+      border-bottom: 1px solid var(--border);
+    }
+
+    .filter-pill {
+      padding: .3rem .9rem;
+      border-radius: 20px; font-size: .78rem;
+      font-weight: 500; cursor: pointer;
+      border: 1.5px solid var(--border);
+      background: transparent; color: var(--text-muted);
+      transition: all var(--transition);
+    }
+
+    .filter-pill:hover, .filter-pill.active {
+      background: var(--soil); color: var(--parchment);
+      border-color: var(--soil);
+    }
+
+    /* ── Loading states ─────────────────────────────────────── */
+    .loading-shimmer {
+      background: linear-gradient(90deg,
+        var(--parchment) 25%, var(--fog) 50%, var(--parchment) 75%);
+      background-size: 200% 100%;
+      animation: shimmer 1.4s infinite;
+      border-radius: var(--radius-sm);
+    }
+
+    @keyframes shimmer {
+      0%   { background-position: 200% center; }
+      100% { background-position: -200% center; }
+    }
+
+    .spinner-leaf {
+      display: inline-block; width: 20px; height: 20px;
+      border: 2px solid rgba(90,147,72,.2);
+      border-top-color: var(--leaf);
+      border-radius: 50%;
+      animation: spin .7s linear infinite;
+    }
+
+    @keyframes spin { to { transform: rotate(360deg); } }
+
+    /* ── Alerts ─────────────────────────────────────────────── */
+    .alert-agri {
+      border-radius: var(--radius-sm);
+      padding: .85rem 1.25rem;
+      font-size: .85rem;
+      display: flex; align-items: flex-start; gap: .7rem;
+      margin-bottom: 1rem;
+    }
+
+    .alert-agri.warning {
+      background: rgba(212,168,67,.1);
+      border: 1px solid rgba(212,168,67,.3);
+      color: #7A5A1A;
+    }
+
+    .alert-agri.error {
+      background: rgba(192,57,43,.08);
+      border: 1px solid rgba(192,57,43,.2);
+      color: var(--error);
+    }
+
+    .alert-agri.success {
+      background: rgba(90,147,72,.08);
+      border: 1px solid rgba(90,147,72,.2);
+      color: var(--moss);
+    }
+
+    /* ── Table ──────────────────────────────────────────────── */
+    .table-agri {
+      width: 100%; border-collapse: collapse;
+      font-size: .85rem;
+    }
+
+    .table-agri thead tr {
+      background: var(--parchment);
+    }
+
+    .table-agri th {
+      padding: .75rem 1rem; text-align: left;
+      font-size: .72rem; font-weight: 600;
+      text-transform: uppercase; letter-spacing: .06em;
+      color: var(--text-muted); border-bottom: 1px solid var(--border);
+    }
+
+    .table-agri td {
+      padding: .7rem 1rem; border-bottom: 1px solid var(--fog);
+      color: var(--text-main);
+    }
+
+    .table-agri tbody tr:hover { background: var(--fog); }
+
+    .profit-positive { color: var(--moss); font-weight: 600; }
+    .profit-negative { color: var(--error); font-weight: 600; }
+
+    .badge-crop {
+      display: inline-block; padding: .2rem .6rem;
+      border-radius: 6px; font-size: .72rem; font-weight: 600;
+    }
+
+    .badge-crop.rice       { background: rgba(107,163,190,.15); color: var(--dusk); }
+    .badge-crop.wheat      { background: rgba(212,168,67,.15);  color: #8B6914; }
+    .badge-crop.maize      { background: rgba(232,201,106,.2);  color: #7A5C0A; }
+    .badge-crop.sugarcane  { background: rgba(90,147,72,.15);   color: var(--moss); }
+
+    /* ── Hydro comparison cards ─────────────────────────────── */
+    .hydro-badge {
+      display: inline-flex; align-items: center; gap: .35rem;
+      padding: .2rem .7rem; border-radius: 20px;
+      font-size: .72rem; font-weight: 600;
+    }
+
+    .hydro-badge.traditional {
+      background: rgba(74,53,32,.1); color: var(--bark);
+    }
+
+    .hydro-badge.hydroponic {
+      background: rgba(107,163,190,.15); color: var(--dusk);
+    }
+
+    /* ── Tooltip ────────────────────────────────────────────── */
+    .chart-tooltip-custom {
+      background: var(--soil) !important;
+      border: none !important;
+      border-radius: var(--radius-sm) !important;
+      color: var(--parchment) !important;
+    }
+
+    /* ── Responsive tweaks ──────────────────────────────────── */
+    @media (max-width: 768px) {
+      .main-content { padding: 1rem; }
+      .navbar-agri { padding: 0 1rem; }
+      .tab-nav-wrapper { padding: 0 1rem; }
+      .weather-hero { padding: 1.25rem; }
+      .weather-temp { font-size: 3rem; }
+      .weather-icon-big { display: none; }
+      .market-ticker-wrapper { padding: 0.5rem 1rem; }
+      .market-ticker-label span { display: none; } /* hide text on mobile to save space */
+    }
+
+    /* ── Tooltip data cards (hydro) ─────────────────────────── */
+    .metric-row {
+      display: flex; align-items: center; justify-content: space-between;
+      padding: .4rem 0;
+    }
+
+    .metric-bar-track {
+      height: 6px; background: var(--fog);
+      border-radius: 3px; flex: 1; margin: 0 .75rem;
+      overflow: hidden;
+    }
+
+    .metric-bar-fill {
+      height: 100%; border-radius: 3px;
+      transition: width 1s cubic-bezier(.4,0,.2,1);
+    }
+
+    .metric-bar-fill.green { background: var(--leaf); }
+    .metric-bar-fill.blue  { background: var(--sky); }
+    .metric-bar-fill.gold  { background: var(--harvest); }
+
+    /* ── Tab 3 — Crop Encyclopedia ───────────────────────────── */
+    .crop-card-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+      gap: 1.25rem;
+    }
+
+    .crop-card {
+      background: var(--card-bg);
+      border: 1px solid var(--border);
+      border-radius: var(--radius);
+      overflow: hidden;
+      cursor: pointer;
+      transition: all var(--transition);
+    }
+
+    .crop-card:hover {
+      box-shadow: var(--shadow-lg); transform: translateY(-4px);
+    }
+
+    .crop-card-banner {
+      height: 80px; display: flex; align-items: center;
+      justify-content: center; font-size: 3rem;
+    }
+
+    .crop-card-body { padding: 1.25rem; }
+
+    .crop-card-name {
+      font-family: 'Playfair Display', serif;
+      font-size: 1.1rem; font-weight: 700;
+      margin-bottom: .5rem;
+    }
+
+    .crop-card-fact {
+      font-size: .8rem; color: var(--text-muted); line-height: 1.6;
+    }
+
+    .crop-stat-row {
+      display: flex; gap: .5rem; margin-top: .75rem; flex-wrap: wrap;
+    }
+
+    .crop-mini-badge {
+      font-size: .7rem; padding: .15rem .55rem;
+      border-radius: 12px; background: var(--fog);
+      color: var(--text-muted); font-weight: 500;
+    }
+
+    /* ── Profit calculator (Tab 3) ──────────────────────────── */
+    .calc-wrapper {
+      background: linear-gradient(135deg, var(--soil), var(--bark));
+      border-radius: var(--radius);
+      padding: 2rem; color: white; margin-top: 2rem;
+    }
+
+    .calc-title {
+      font-family: 'Playfair Display', serif;
+      font-size: 1.25rem; color: var(--parchment);
+      margin-bottom: 1.25rem; display: flex; align-items: center; gap: .5rem;
+    }
+
+    .calc-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(200px, 1fr)); gap: 1rem; }
+
+    .calc-field label {
+      font-size: .75rem; color: rgba(245,237,216,.6);
+      letter-spacing: .05em; text-transform: uppercase;
+      display: block; margin-bottom: .35rem;
+    }
+
+    .calc-field input, .calc-field select {
+      width: 100%; padding: .55rem .85rem;
+      background: rgba(255,255,255,.08);
+      border: 1px solid rgba(255,255,255,.15);
+      border-radius: var(--radius-sm); color: white;
+      font-family: 'DM Sans', sans-serif; font-size: .9rem;
+      outline: none; transition: border-color var(--transition);
+    }
+
+    .calc-field input::placeholder { color: rgba(255,255,255,.3); }
+    .calc-field input:focus, .calc-field select:focus {
+      border-color: var(--harvest);
+    }
+
+    .calc-field select option { background: var(--bark); color: white; }
+
+    .calc-result {
+      margin-top: 1.5rem; padding: 1.25rem;
+      background: rgba(212,168,67,.12);
+      border: 1px solid rgba(212,168,67,.3);
+      border-radius: var(--radius-sm);
+    }
+
+    .calc-result-val {
+      font-family: 'Playfair Display', serif;
+      font-size: 2rem; font-weight: 700;
+      color: var(--harvest);
+    }
+
+    .calc-btn {
+      margin-top: 1rem;
+      background: var(--harvest); color: var(--soil);
+      border: none; padding: .65rem 1.75rem;
+      border-radius: var(--radius-sm); font-weight: 600;
+      font-size: .9rem; cursor: pointer;
+      transition: all var(--transition);
+    }
+
+    .calc-btn:hover { background: var(--wheat); transform: translateY(-1px); }
+
+    /* ── Footer ─────────────────────────────────────────────── */
+    footer {
+      text-align: center; padding: 2rem;
+      color: var(--text-muted); font-size: .8rem;
+      border-top: 1px solid var(--border);
+      margin-top: 3rem;
+    }
+
+    footer strong { color: var(--soil); }
+  </style>
+</head>
+<body>
+
+<nav class="navbar-agri">
+  <a href="#" class="navbar-brand-agri">
+    <div class="brand-icon">🌾</div>
+    <span class="brand-text">Agri<span>Insights</span> Pro</span>
+  </a>
+  <div class="navbar-right">
+    <div class="live-badge">
+      <div class="live-dot"></div>
+      LIVE DATA
+    </div>
+    <div class="clock-display d-none d-md-block" id="clock">--:--:--</div>
+    
+    <div class="dropdown">
+      <div class="user-profile-btn" data-bs-toggle="dropdown" aria-expanded="false">
+        <i class="bi bi-person-circle fs-5"></i>
+        <span class="d-none d-sm-inline">Vishal Singh Negi</span>
+        <i class="bi bi-chevron-down ms-1" style="font-size: 0.7rem;"></i>
+      </div>
+      <ul class="dropdown-menu dropdown-menu-end dropdown-menu-custom">
+        <li><a class="dropdown-item" href="#"><i class="bi bi-person me-2 text-muted"></i>My Profile</a></li>
+        <li><a class="dropdown-item" href="#"><i class="bi bi-gear me-2 text-muted"></i>Settings</a></li>
+        <li><hr class="dropdown-divider"></li>
+        <li><a class="dropdown-item text-danger" href="#"><i class="bi bi-box-arrow-right me-2"></i>Logout</a></li>
+      </ul>
+    </div>
+  </div>
+</nav>
+
+<div class="market-ticker-wrapper">
+  <div class="market-ticker-label">
+    <i class="bi bi-graph-up-arrow"></i> <span>Live Markets</span>
+  </div>
+  <div class="ticker-content">
+    <marquee behavior="scroll" direction="left" id="market-ticker" scrollamount="5">
+      Loading market data...
+    </marquee>
+  </div>
+</div>
+
+<div class="tab-nav-wrapper">
+  <ul class="tab-nav" role="tablist">
+    <li><a class="nav-link active" data-tab="hub"       href="#"><i class="bi bi-grid-1x2"></i> Daily Hub</a></li>
+    <li><a class="nav-link"        data-tab="weather"   href="#"><i class="bi bi-cloud-sun"></i> Weather</a></li>
+    <li><a class="nav-link"        data-tab="crops"     href="#"><i class="bi bi-flower1"></i> Crop Data</a></li>
+    <li><a class="nav-link"        data-tab="analytics" href="#"><i class="bi bi-bar-chart-line"></i> Market & Analytics</a></li>
+  </ul>
+</div>
+
+<main class="main-content">
+
+  <section class="tab-pane active" id="tab-hub">
+
+    <div class="section-header">
+      <div class="section-tag"><i class="bi bi-lightning-charge-fill"></i> Live Dashboard</div>
+      <h1 class="section-title">Daily Hub</h1>
+      <p class="section-sub">Real-time weather, news, and quick stats for agricultural stakeholders</p>
+    </div>
+
+    <div class="stat-grid" id="kpi-strip">
+      <div class="stat-card green loading-shimmer" style="height:120px;"></div>
+      <div class="stat-card gold loading-shimmer"  style="height:120px;"></div>
+      <div class="stat-card blue loading-shimmer"  style="height:120px;"></div>
+      <div class="stat-card earth loading-shimmer" style="height:120px;"></div>
+    </div>
+
+    <div class="row g-4">
+      <div class="col-lg-5">
+        <div class="card-agri">
+          <div class="card-header-agri">
+            <span class="card-title-agri"><i class="bi bi-cloud-sun-fill"></i> Current Conditions</span>
+            <span class="spinner-leaf" id="weather-mini-spin"></span>
+          </div>
+          <div class="card-body-agri" id="weather-mini-body">
+            <div class="loading-shimmer" style="height:160px; border-radius:8px;"></div>
+          </div>
+        </div>
+      </div>
+
+      <div class="col-lg-7">
+        <div class="card-agri">
+          <div class="card-header-agri">
+            <span class="card-title-agri"><i class="bi bi-newspaper"></i> Agriculture Headlines</span>
+            <span class="spinner-leaf" id="news-spin"></span>
+          </div>
+          <div id="news-list">
+            <div style="padding:1.5rem;">
+              <div class="loading-shimmer mb-3" style="height:52px; border-radius:8px;"></div>
+              <div class="loading-shimmer mb-3" style="height:52px; border-radius:8px;"></div>
+              <div class="loading-shimmer mb-3" style="height:52px; border-radius:8px;"></div>
+              <div class="loading-shimmer mb-3" style="height:52px; border-radius:8px;"></div>
+              <div class="loading-shimmer"      style="height:52px; border-radius:8px;"></div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <section class="tab-pane" id="tab-weather">
+
+    <div class="section-header">
+      <div class="section-tag"><i class="bi bi-cloud"></i> Meteorological Data</div>
+      <h1 class="section-title">Weather Centre</h1>
+      <p class="section-sub">Detailed atmospheric conditions for your farming region</p>
+    </div>
+
+    <div id="weather-hero-wrapper">
+      <div class="loading-shimmer" style="height:200px; border-radius:12px; margin-bottom:1.5rem;"></div>
+    </div>
+
+    <div class="row g-4">
+      <div class="col-md-6">
+        <div class="card-agri">
+          <div class="card-header-agri">
+            <span class="card-title-agri"><i class="bi bi-thermometer-half"></i> Atmospheric Metrics</span>
+          </div>
+          <div class="card-body-agri" id="weather-details-card">
+            <div class="loading-shimmer" style="height:180px; border-radius:8px;"></div>
+          </div>
+        </div>
+      </div>
+      <div class="col-md-6">
+        <div class="card-agri">
+          <div class="card-header-agri">
+            <span class="card-title-agri"><i class="bi bi-stars"></i> Farming Advisory</span>
+          </div>
+          <div class="card-body-agri" id="farming-advisory">
+            <div class="loading-shimmer" style="height:180px; border-radius:8px;"></div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <section class="tab-pane" id="tab-crops">
+    <div class="section-header">
+      <div class="section-tag"><i class="bi bi-flower1"></i> Crop Intelligence</div>
+      <h1 class="section-title">Crop Encyclopedia</h1>
+      <p class="section-sub">Agronomy details, growing conditions, and a live profit calculator</p>
+    </div>
+
+    <div class="crop-card-grid" id="crop-grid"></div>
+
+    <div class="calc-wrapper">
+      <div class="calc-title"><i class="bi bi-calculator"></i> Profit Estimator</div>
+      <div class="calc-grid">
+        <div class="calc-field">
+          <label>Crop</label>
+          <select id="calc-crop">
+            <option>Rice</option><option>Wheat</option>
+            <option>Maize</option><option>Sugarcane</option>
+          </select>
+        </div>
+        <div class="calc-field">
+          <label>Area (Hectares)</label>
+          <input type="number" id="calc-area" placeholder="e.g. 100" value="100" />
+        </div>
+        <div class="calc-field">
+          <label>Expected Yield (Tons/Ha)</label>
+          <input type="number" id="calc-yield" placeholder="e.g. 4.5" value="4.5" />
+        </div>
+        <div class="calc-field">
+          <label>Market Price (₹/Ton)</label>
+          <input type="number" id="calc-price" placeholder="e.g. 320" value="320" />
+        </div>
+        <div class="calc-field">
+          <label>Farming Cost (₹/Ha)</label>
+          <input type="number" id="calc-cost" placeholder="e.g. 480" value="480" />
+        </div>
+      </div>
+      <button class="calc-btn" onclick="runCalculator()">Calculate Profit</button>
+      <div class="calc-result" id="calc-result" style="display:none;"></div>
+    </div>
+  </section>
+
+  <section class="tab-pane" id="tab-analytics">
+    <div class="section-header">
+      <div class="section-tag"><i class="bi bi-graph-up-arrow"></i> Data Analytics</div>
+      <h1 class="section-title">Market & Analytics</h1>
+      <p class="section-sub">Historical crop profitability and hydroponics efficiency from local database</p>
+    </div>
+
+    <div id="analytics-spinner" class="text-center py-5">
+      <div class="spinner-leaf" style="width:40px;height:40px;border-width:3px;"></div>
+      <p class="mt-3" style="color:var(--text-muted);">Loading analytics data…</p>
+    </div>
+
+    <div id="analytics-content" style="display:none;">
+
+      <div class="stat-grid" id="db-kpi-strip"></div>
+
+      <div class="card-agri mb-4">
+        <div class="card-header-agri">
+          <span class="card-title-agri"><i class="bi bi-graph-up"></i> Multi-Crop Profitability Trend (2010–2022)</span>
+          <div class="filter-row" style="border:none;padding:0;" id="profit-filters"></div>
+        </div>
+        <div class="chart-container">
+          <div class="chart-wrapper" style="height:360px;">
+            <canvas id="profitLineChart"></canvas>
+          </div>
+        </div>
+      </div>
+
+      <div class="row g-4">
+        <div class="col-lg-6">
+          <div class="card-agri">
+            <div class="card-header-agri">
+              <span class="card-title-agri"><i class="bi bi-bar-chart-fill"></i> Yield Density: Hydro vs. Traditional</span>
+              <span class="hydro-badge hydroponic"><i class="bi bi-droplet-half"></i> Hydroponics</span>
+            </div>
+            <div class="chart-container">
+              <div class="chart-wrapper" style="height:300px;">
+                <canvas id="yieldBarChart"></canvas>
+              </div>
+            </div>
+          </div>
+        </div>
+        <div class="col-lg-6">
+          <div class="card-agri">
+            <div class="card-header-agri">
+              <span class="card-title-agri"><i class="bi bi-droplet-fill"></i> Water Efficiency (L per kg)</span>
+              <span class="hydro-badge traditional"><i class="bi bi-tree-fill"></i> Traditional</span>
+            </div>
+            <div class="chart-container">
+              <div class="chart-wrapper" style="height:300px;">
+                <canvas id="waterBarChart"></canvas>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <div class="card-agri mt-4">
+        <div class="card-header-agri">
+          <span class="card-title-agri"><i class="bi bi-table"></i> Raw Profitability Data</span>
+          <input type="text" id="table-search" placeholder="Filter table…"
+            style="padding:.35rem .85rem;border:1px solid var(--border);border-radius:6px;font-size:.82rem;outline:none;width:180px;" />
+        </div>
+        <div style="overflow-x:auto;">
+          <table class="table-agri" id="profit-table">
+            <thead>
+              <tr>
+                <th>Year</th><th>Crop</th><th>State</th>
+                <th>Production (T)</th>
+                <th>Revenue (₹)</th>
+                <th>Total Cost (₹)</th>
+                <th>Profit (₹)</th>
+                <th>Yield (T/Ha)</th>
+              </tr>
+            </thead>
+            <tbody id="profit-table-body"></tbody>
+          </table>
+        </div>
+      </div>
+
+    </div><div id="analytics-error" style="display:none;"></div>
+  </section>
+
+</main>
+
+<footer>
+  <strong>AgriInsights Pro</strong> &mdash; Built with Java Servlets · MySQL · Chart.js · Bootstrap 5<br>
+  <span style="font-size:.72rem;">© 2024 AgriInsights Pro. All rights reserved.</span>
+</footer>
+
+<script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/4.4.1/chart.umd.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/bootstrap/5.3.3/js/bootstrap.bundle.min.js"></script>
+
+<script>
+/* ═══════════════════════════════════════════════════════════════
+   AgriInsights Pro — Frontend SPA Controller
+   ═══════════════════════════════════════════════════════════════ */
+
+/* ── CONFIG ──────────────────────────────────────────────────── */
+const CONFIG = {
+  OWM_KEY:     'a1b2c3d4e5f6g7h8i9j0k1l2m3n4o5p6',
+  NEWS_KEY:    'a3daedc6224d47d58f80462d3ddb0625',
+  LOCATION:    'Delhi,IN',
+  LAT:          28.6139,
+  LON:          77.2090,
+  BACKEND_URL: './api/dashboard'
+};
+
+/* ── DEMO / FALLBACK DATA (when API keys aren't set) ─────────── */
+const DEMO_WEATHER = {
+  name: 'Muzaffarnagar', sys: { country: 'IN', sunrise: 1700000000, sunset: 1700040000 },
+  main: { temp: 28.4, feels_like: 31.2, humidity: 74, pressure: 1008, temp_min: 24.1, temp_max: 32.0 },
+  weather: [{ main: 'Clouds', description: 'partly cloudy', icon: '02d' }],
+  wind: { speed: 3.4, deg: 220 },
+  visibility: 9000, clouds: { all: 45 }
+};
+
+const DEMO_NEWS = [
+  { title: 'India Sets Record Wheat Procurement of 26.2 Million Tonnes This Rabi Season',
+    source: { name: 'The Hindu' }, publishedAt: '2024-05-18T07:30:00Z',
+    url: '#', description: 'FCI procurement crosses milestone amid bumper harvest.' },
+  { title: 'Punjab Farmers Adopt AI-Powered Irrigation Systems to Cut Water Usage',
+    source: { name: 'Hindustan Times' }, publishedAt: '2024-05-17T09:00:00Z',
+    url: '#', description: 'New precision tech reduces water consumption by up to 35%.' },
+  { title: 'Global Rice Prices Stabilise After Months of Volatility, FAO Reports',
+    source: { name: 'Reuters' }, publishedAt: '2024-05-16T11:00:00Z',
+    url: '#', description: 'Food and Agriculture Organisation notes supply chain improvements.' },
+  { title: 'Maharashtra Launches ₹5,000 Cr Crop Insurance Overhaul for Kharif 2024',
+    source: { name: 'Economic Times' }, publishedAt: '2024-05-15T13:30:00Z',
+    url: '#', description: 'Streamlined claims processing to benefit 8 million farmers.' },
+  { title: 'Hydroponic Farming Startups Attract $1.2 Billion in Funding Across Asia',
+    source: { name: 'Bloomberg' }, publishedAt: '2024-05-14T08:00:00Z',
+    url: '#', description: 'Vertical farming trend accelerates in urban food security drive.' }
+];
+
+/* ── STATE ────────────────────────────────────────────────────── */
+let charts = {};
+let analyticsData = null;
+let allProfitRows = [];
+let activeFilters = new Set(['Rice','Wheat','Maize','Sugarcane']);
+
+/* ═══════════════════════════════════════════════════════════════
+   UTILITIES
+   ═══════════════════════════════════════════════════════════════ */
+const fmt = {
+  // UPDATED TO INR: Uses the ₹ symbol and Indian numbering system (e.g. 1,00,000)
+  money:  v => '₹' + Number(v).toLocaleString('en-IN', { maximumFractionDigits: 0 }),
+  num:    v => Number(v).toLocaleString('en-IN'),
+  temp:   v => `${Math.round(v)}°C`,
+  date:   s => new Date(s).toLocaleDateString('en-GB',{ day:'numeric',month:'short',year:'numeric' }),
+  time:   s => new Date(s).toLocaleDateString('en-GB',{ day:'numeric',month:'short' })
+};
+
+function hide(id) { const el = document.getElementById(id); if(el) el.style.display = 'none'; }
+function show(id, d='block') { const el = document.getElementById(id); if(el) el.style.display = d; }
+
+/* ═══════════════════════════════════════════════════════════════
+   CLOCK & LIVE MARKET TICKER
+   ═══════════════════════════════════════════════════════════════ */
+function startClock() {
+  const update = () => {
+    const now = new Date();
+    document.getElementById('clock').textContent = now.toLocaleTimeString('en-GB');
+  };
+  update(); setInterval(update, 1000);
+}
+
+function initMarketTicker() {
+  const mockPrices = [
+    { crop: "WHEAT", price: 342.50, trend: "+1.2%" },
+    { crop: "CORN", price: 215.30, trend: "-0.5%" },
+    { crop: "SOYBEANS", price: 512.10, trend: "+2.1%" },
+    { crop: "RICE", price: 405.00, trend: "+0.8%" },
+    { crop: "SUGARCANE", price: 85.20, trend: "-0.2%" },
+    { crop: "BARLEY", price: 180.40, trend: "+0.4%" },
+    { crop: "COTTON", price: 710.00, trend: "-1.1%" }
+  ];
+  
+  let tickerHtml = "";
+  mockPrices.forEach(item => {
+    const isUp = item.trend.startsWith('+');
+    const colorCls = isUp ? 'ticker-up' : 'ticker-down';
+    const arrow = isUp ? '▲' : '▼';
+    // UPDATED TO INR
+    tickerHtml += `<span class="ticker-item"><strong>${item.crop}</strong>: ₹${item.price.toFixed(2)} <span class="${colorCls}">${arrow} ${item.trend}</span></span>`;
+  });
+  
+  document.getElementById('market-ticker').innerHTML = tickerHtml;
+}
+
+/* ═══════════════════════════════════════════════════════════════
+   TAB NAVIGATION
+   ═══════════════════════════════════════════════════════════════ */
+document.querySelectorAll('.nav-link[data-tab]').forEach(link => {
+  link.addEventListener('click', e => {
+    e.preventDefault();
+    const tab = link.dataset.tab;
+    document.querySelectorAll('.nav-link[data-tab]').forEach(l => l.classList.remove('active'));
+    document.querySelectorAll('.tab-pane').forEach(p => p.classList.remove('active'));
+    link.classList.add('active');
+    document.getElementById('tab-' + tab).classList.add('active');
+    if (tab === 'analytics' && !analyticsData) loadAnalytics();
+  });
+});
+
+/* ═══════════════════════════════════════════════════════════════
+   WEATHER
+   ═══════════════════════════════════════════════════════════════ */
+const WEATHER_ICONS = {
+  Clear:'☀️', Clouds:'⛅', Rain:'🌧️', Drizzle:'🌦️',
+  Thunderstorm:'⛈️', Snow:'❄️', Mist:'🌫️', Haze:'🌫️',
+  Fog:'🌫️', Smoke:'💨', Dust:'💨', Sand:'💨',
+  Ash:'🌋', Squall:'💨', Tornado:'🌪️'
+};
+
+async function loadWeather() {
+  let data = DEMO_WEATHER;
+  const isDemo = CONFIG.OWM_KEY === 'YOUR_OPENWEATHERMAP_API_KEY';
+
+  if (!isDemo) {
+    try {
+      const url = `https://api.openweathermap.org/data/2.5/weather?` +
+                  `lat=${CONFIG.LAT}&lon=${CONFIG.LON}&units=metric&appid=${CONFIG.OWM_KEY}`;
+      const res = await fetch(url);
+      if (!res.ok) throw new Error(res.status);
+      data = await res.json();
+    } catch(e) {
+      console.warn('OWM fallback to demo:', e);
+    }
+  }
+
+  renderWeatherMini(data, isDemo);
+  renderWeatherFull(data, isDemo);
+  renderHubKPIs(data);
+  hide('weather-mini-spin');
+}
+
+function renderWeatherMini(d, isDemo) {
+  const cond = d.weather[0].main;
+  const icon = WEATHER_ICONS[cond] || '🌡️';
+  document.getElementById('weather-mini-body').innerHTML = `
+    ${isDemo ? '<div class="alert-agri warning mb-3"><i class="bi bi-info-circle"></i> Demo data — add your OpenWeatherMap API key in CONFIG</div>' : ''}
+    <div style="display:flex;align-items:center;gap:1.5rem;">
+      <div style="font-size:3.5rem;line-height:1;">${icon}</div>
+      <div>
+        <div style="font-family:'Playfair Display',serif;font-size:2.2rem;font-weight:700;color:var(--soil);">
+          ${fmt.temp(d.main.temp)}
+        </div>
+        <div style="color:var(--text-muted);font-size:.9rem;text-transform:capitalize;">
+          ${d.weather[0].description}
+        </div>
+        <div style="font-size:.8rem;color:var(--text-muted);margin-top:.3rem;">
+          <i class="bi bi-geo-alt-fill" style="color:var(--leaf);"></i>
+          ${d.name}, ${d.sys.country}
+        </div>
+      </div>
+    </div>
+    <div style="display:flex;gap:1.5rem;margin-top:1rem;padding-top:1rem;border-top:1px solid var(--border);">
+      <div><div style="font-weight:600;">${d.main.humidity}%</div><div style="font-size:.75rem;color:var(--text-muted);">Humidity</div></div>
+      <div><div style="font-weight:600;">${d.wind.speed} m/s</div><div style="font-size:.75rem;color:var(--text-muted);">Wind</div></div>
+      <div><div style="font-weight:600;">${fmt.temp(d.main.feels_like)}</div><div style="font-size:.75rem;color:var(--text-muted);">Feels Like</div></div>
+    </div>`;
+}
+
+function renderWeatherFull(d, isDemo) {
+  const cond = d.weather[0].main;
+  const icon = WEATHER_ICONS[cond] || '🌡️';
+
+  document.getElementById('weather-hero-wrapper').innerHTML = `
+    ${isDemo ? '<div class="alert-agri warning mb-3"><i class="bi bi-info-circle"></i> Demo weather data — configure your API key to see live conditions.</div>' : ''}
+    <div class="weather-hero">
+      <div class="weather-main">
+        <div class="weather-temp">${fmt.temp(d.main.temp)}</div>
+        <div class="weather-condition" style="text-transform:capitalize;">${d.weather[0].description}</div>
+        <div class="weather-location"><i class="bi bi-geo-alt"></i>${d.name}, ${d.sys.country}</div>
+      </div>
+      <div class="weather-details">
+        <div class="weather-detail-item">
+          <div class="weather-detail-val">${d.main.humidity}%</div>
+          <div class="weather-detail-lbl">Humidity</div>
+        </div>
+        <div class="weather-detail-item">
+          <div class="weather-detail-val">${d.wind.speed} m/s</div>
+          <div class="weather-detail-lbl">Wind Speed</div>
+        </div>
+        <div class="weather-detail-item">
+          <div class="weather-detail-val">${d.main.pressure} hPa</div>
+          <div class="weather-detail-lbl">Pressure</div>
+        </div>
+        <div class="weather-detail-item">
+          <div class="weather-detail-val">${Math.round((d.visibility||10000)/1000)} km</div>
+          <div class="weather-detail-lbl">Visibility</div>
+        </div>
+      </div>
+      <div class="weather-icon-big">${icon}</div>
+    </div>`;
+
+  document.getElementById('weather-details-card').innerHTML = `
+    <div class="metric-row">
+      <span style="font-size:.85rem;color:var(--text-muted);">Min Temp</span>
+      <span style="font-weight:600;">${fmt.temp(d.main.temp_min)}</span>
+    </div>
+    <div class="metric-row">
+      <span style="font-size:.85rem;color:var(--text-muted);">Max Temp</span>
+      <span style="font-weight:600;">${fmt.temp(d.main.temp_max)}</span>
+    </div>
+    <div class="metric-row">
+      <span style="font-size:.85rem;color:var(--text-muted);">Feels Like</span>
+      <span style="font-weight:600;">${fmt.temp(d.main.feels_like)}</span>
+    </div>
+    <div class="metric-row">
+      <span style="font-size:.85rem;color:var(--text-muted);">Cloud Cover</span>
+      <span style="font-weight:600;">${d.clouds.all}%</span>
+    </div>
+    <div class="metric-row">
+      <span style="font-size:.85rem;color:var(--text-muted);">Wind Direction</span>
+      <span style="font-weight:600;">${d.wind.deg}°</span>
+    </div>`;
+
+  // Farming advisory
+  const temp = d.main.temp;
+  const hum  = d.main.humidity;
+  const adv  = [];
+  if (temp > 35) adv.push({ icon:'🌡️', text:'High heat — increase irrigation frequency; consider mulching to retain moisture.', cls:'warning' });
+  else if (temp < 12) adv.push({ icon:'❄️', text:'Cold conditions — protect sensitive seedlings; delay planting tender crops.', cls:'warning' });
+  else adv.push({ icon:'✅', text:'Temperatures are favourable for most Kharif and Rabi crops.', cls:'success' });
+
+  if (hum > 80) adv.push({ icon:'💧', text:'High humidity increases fungal disease risk — monitor for blight and rust.', cls:'warning' });
+  else if (hum < 30) adv.push({ icon:'🏜️', text:'Low humidity — drip irrigation recommended to minimise evapotranspiration.', cls:'warning' });
+  else adv.push({ icon:'💚', text:'Humidity levels within optimal range for crop growth.', cls:'success' });
+
+  if (cond === 'Rain') adv.push({ icon:'🌧️', text:'Active rainfall — delay fertiliser application to prevent runoff.', cls:'warning' });
+  if (cond === 'Clear') adv.push({ icon:'☀️', text:'Clear skies — ideal for harvesting and crop drying operations.', cls:'success' });
+
+  document.getElementById('farming-advisory').innerHTML =
+    adv.map(a => `<div class="alert-agri ${a.cls}"><span style="font-size:1.1rem;">${a.icon}</span><span>${a.text}</span></div>`).join('');
+}
+
+function renderHubKPIs(d) {
+  document.getElementById('kpi-strip').innerHTML = `
+    <div class="stat-card green">
+      <div class="stat-icon green"><i class="bi bi-thermometer-half"></i></div>
+      <div class="stat-value">${fmt.temp(d.main.temp)}</div>
+      <div class="stat-label">Current Temperature · ${d.name}</div>
+    </div>
+    <div class="stat-card gold">
+      <div class="stat-icon gold"><i class="bi bi-droplet"></i></div>
+      <div class="stat-value">${d.main.humidity}%</div>
+      <div class="stat-label">Relative Humidity</div>
+    </div>
+    <div class="stat-card blue">
+      <div class="stat-icon blue"><i class="bi bi-wind"></i></div>
+      <div class="stat-value">${d.wind.speed}<small style="font-size:1rem;">m/s</small></div>
+      <div class="stat-label">Wind Speed</div>
+    </div>
+    <div class="stat-card earth">
+      <div class="stat-icon earth"><i class="bi bi-cloud"></i></div>
+      <div class="stat-value">${d.clouds.all}%</div>
+      <div class="stat-label">Cloud Coverage</div>
+    </div>`;
+}
+
+/* ═══════════════════════════════════════════════════════════════
+   NEWS
+   ═══════════════════════════════════════════════════════════════ */
+async function loadNews() {
+  let articles = DEMO_NEWS;
+  const isDemo = CONFIG.NEWS_KEY === 'YOUR_NEWSAPI_KEY';
+
+  if (!isDemo) {
+    try {
+      const url = `https://newsapi.org/v2/everything?` +
+                  `q=agriculture+farming&sortBy=publishedAt&pageSize=5&apiKey=${CONFIG.NEWS_KEY}`;
+      const res = await fetch(url);
+      if (!res.ok) throw new Error(res.status);
+      const json = await res.json();
+      if (json.articles?.length) articles = json.articles.slice(0, 5);
+    } catch(e) {
+      console.warn('NewsAPI fallback to demo:', e);
+    }
+  }
+
+  const demoNote = isDemo
+    ? `<div class="alert-agri warning" style="margin:.75rem 1rem 0;">
+         <i class="bi bi-info-circle"></i> Demo headlines — add your NewsAPI key in CONFIG
+       </div>` : '';
+
+  const items = articles.map((a, i) => `
+    <a class="news-item" href="${a.url}" target="_blank" rel="noopener">
+      <div class="news-num">${String(i+1).padStart(2,'0')}</div>
+      <div>
+        <div class="news-title">${a.title}</div>
+        <div class="news-meta">
+          <span><i class="bi bi-journal"></i> ${a.source.name}</span>
+          <span><i class="bi bi-calendar3"></i> ${fmt.time(a.publishedAt)}</span>
+        </div>
+      </div>
+    </a>
+    ${i < articles.length-1 ? '<div class="news-divider"></div>' : ''}`).join('');
+
+  document.getElementById('news-list').innerHTML = demoNote + items;
+  hide('news-spin');
+}
+
+/* ═══════════════════════════════════════════════════════════════
+   CROP ENCYCLOPEDIA (Tab 3)
+   ═══════════════════════════════════════════════════════════════ */
+const CROP_FACTS = {
+  Rice:      { emoji:'🌾', color:'#e8f4f9', season:'Kharif (Jun–Nov)', water:'High', soil:'Clayey/Loamy', origin:'South Asia',
+               fact:'Rice feeds more than half the global population and requires flooded paddies to suppress weeds.' },
+  Wheat:     { emoji:'🌿', color:'#fef9e7', season:'Rabi (Oct–Mar)', water:'Moderate', soil:'Well-drained Loam', origin:'Fertile Crescent',
+               fact:'Wheat domestication ~10,000 years ago in the Near East marked the dawn of agriculture.' },
+  Maize:     { emoji:'🌽', color:'#fef5e4', season:'Kharif (Jun–Sep)', water:'Moderate', soil:'Sandy Loam', origin:'Mesoamerica',
+               fact:'Maize is the world\'s highest-produced grain crop, used for food, feed, and biofuels.' },
+  Sugarcane: { emoji:'🎋', color:'#eafaf1', season:'Annual / Perennial', water:'Very High', soil:'Deep Alluvial', origin:'New Guinea',
+               fact:'Sugarcane can be harvested every 12 months; a single stalk can grow up to 6 metres tall.' }
+};
+
+function renderCropGrid() {
+  const grid = document.getElementById('crop-grid');
+  grid.innerHTML = Object.entries(CROP_FACTS).map(([name, c]) => `
+    <div class="crop-card" onclick="selectCalcCrop('${name}')">
+      <div class="crop-card-banner" style="background:${c.color};">${c.emoji}</div>
+      <div class="crop-card-body">
+        <div class="crop-card-name">${name}</div>
+        <div class="crop-card-fact">${c.fact}</div>
+        <div class="crop-stat-row">
+          <span class="crop-mini-badge"><i class="bi bi-calendar3"></i> ${c.season}</span>
+          <span class="crop-mini-badge"><i class="bi bi-droplet"></i> ${c.water} water</span>
+          <span class="crop-mini-badge"><i class="bi bi-layers"></i> ${c.soil}</span>
+        </div>
+      </div>
+    </div>`).join('');
+}
+
+function selectCalcCrop(name) {
+  document.getElementById('calc-crop').value = name;
+  document.querySelector('.calc-wrapper').scrollIntoView({ behavior:'smooth', block:'center' });
+}
+
+/* ═══════════════════════════════════════════════════════════════
+   PROFIT CALCULATOR
+   ═══════════════════════════════════════════════════════════════ */
+function runCalculator() {
+  const area  = parseFloat(document.getElementById('calc-area').value)  || 0;
+  const yld   = parseFloat(document.getElementById('calc-yield').value) || 0;
+  const price = parseFloat(document.getElementById('calc-price').value) || 0;
+  const cost  = parseFloat(document.getElementById('calc-cost').value)  || 0;
+  const crop  = document.getElementById('calc-crop').value;
+
+  const production = area * yld;
+  const revenue    = production * price;
+  const totalCost  = area * cost;
+  const profit     = revenue - totalCost;
+  const roi        = totalCost > 0 ? ((profit / totalCost) * 100).toFixed(1) : 0;
+
+  const isPositive = profit >= 0;
+  const el = document.getElementById('calc-result');
+  el.style.display = 'block';
+  el.innerHTML = `
+    <div style="display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:1rem;">
+      <div>
+        <div style="font-size:.75rem;color:rgba(245,237,216,.6);text-transform:uppercase;letter-spacing:.06em;">
+          Estimated Net Profit — ${crop}
+        </div>
+        <div class="calc-result-val" style="color:${isPositive ? 'var(--wheat)' : '#ff7675'};">
+          ${isPositive ? '+' : ''}${fmt.money(profit)}
+        </div>
+      </div>
+      <div style="display:flex;gap:2rem;flex-wrap:wrap;">
+        <div><div style="color:var(--parchment);font-weight:600;">${fmt.money(revenue)}</div>
+          <div style="font-size:.72rem;opacity:.6;">Revenue</div></div>
+        <div><div style="color:var(--parchment);font-weight:600;">${fmt.money(totalCost)}</div>
+          <div style="font-size:.72rem;opacity:.6;">Total Cost</div></div>
+        <div><div style="color:${isPositive?'var(--wheat)':'#ff7675'};font-weight:600;">${roi}%</div>
+          <div style="font-size:.72rem;opacity:.6;">ROI</div></div>
+      </div>
+    </div>`;
+}
+
+/* ═══════════════════════════════════════════════════════════════
+   ANALYTICS — Backend fetch + Chart.js
+   ═══════════════════════════════════════════════════════════════ */
+const CHART_COLORS = {
+  Rice:      { line: '#6BA3BE', fill: 'rgba(107,163,190,.15)' },
+  Wheat:     { line: '#D4A843', fill: 'rgba(212,168,67,.15)'  },
+  Maize:     { line: '#E8C96A', fill: 'rgba(232,201,106,.15)' },
+  Sugarcane: { line: '#5A9348', fill: 'rgba(90,147,72,.15)'   }
+};
+
+const CHART_DEFAULTS = {
+  responsive: true, maintainAspectRatio: false,
+  plugins: { legend: { labels: { font: { family: 'DM Sans', size: 12 }, color: '#4A3520' } } },
+  scales: {
+    x: { grid: { color: 'rgba(0,0,0,.05)' }, ticks: { color: '#6B5C42', font: { family: 'DM Sans' } } },
+    y: { grid: { color: 'rgba(0,0,0,.05)' }, ticks: { color: '#6B5C42', font: { family: 'DM Sans' } } }
+  }
+};
+
+async function loadAnalytics() {
+  show('analytics-spinner');
+  hide('analytics-content');
+  hide('analytics-error');
+
+  let data;
+  try {
+    const res = await fetch(CONFIG.BACKEND_URL);
+    if (!res.ok) throw new Error(`HTTP ${res.status}`);
+    data = await res.json();
+    if (data.status !== 'ok') throw new Error('Bad response');
+  } catch (err) {
+    console.warn('Backend unavailable — using generated demo data:', err.message);
+    data = generateDemoAnalyticsData();
+  }
+
+  analyticsData = data;
+  hide('analytics-spinner');
+  show('analytics-content');
+
+  renderDBKPIs(data);
+  buildProfitLineChart(data.cropProfits);
+  buildHydroCharts(data.hydroponics);
+  buildProfitTable(data.cropProfits);
+  buildCropFilters(data.cropProfits);
+}
+
+function generateDemoAnalyticsData() {
+  const crops = ['Rice','Wheat','Maize','Sugarcane'];
+  const econ = {
+    Rice:      { prices:[280,290,295,305,310,320,315,325,330,340,345,355,360], costs:[420,430,445,455,465,475,480,490,495,505,510,520,525] },
+    Wheat:     { prices:[220,228,235,242,248,255,260,268,272,280,288,295,302], costs:[350,360,370,378,385,392,398,405,410,418,425,432,440] },
+    Maize:     { prices:[180,186,192,198,204,210,215,222,228,235,242,248,255], costs:[280,288,295,302,308,315,320,328,335,342,348,355,362] },
+    Sugarcane: { prices:[35,36,37,36,38,39,38,40,41,42,43,44,45], costs:[280,290,295,300,305,310,315,320,325,328,332,338,342] }
+  };
+  const yieldBase = { Rice:4.00, Wheat:4.00, Maize:3.50, Sugarcane:70.0 };
+  const prodBase  = { Rice:480000, Wheat:380000, Maize:262500, Sugarcane:14000000 };
+  const areaBase  = { Rice:120000, Wheat:95000, Maize:75000, Sugarcane:200000 };
+
+  const cropProfits = [];
+  for (let yi = 0; yi < 13; yi++) {
+    const year = 2010 + yi;
+    crops.forEach(crop => {
+      const prod = prodBase[crop] * (1 + yi * 0.028 + (Math.random()-.5)*.01);
+      const area = areaBase[crop] * (1 + yi * 0.014);
+      const price = econ[crop].prices[yi];
+      const cost  = econ[crop].costs[yi];
+      const revenue = prod * price;
+      const totalCost = area * cost;
+      cropProfits.push({
+        year, crop, state: 'Punjab/Haryana/Maharashtra/UP'.split('/')[crops.indexOf(crop)],
+        production: Math.round(prod), area: Math.round(area),
+        marketPricePerTon: price, farmingCostPerHa: cost,
+        revenue: Math.round(revenue), totalCost: Math.round(totalCost),
+        profit: Math.round(revenue - totalCost),
+        yieldValue: +(yieldBase[crop] * (1 + yi * 0.015)).toFixed(2)
+      });
+    });
+  }
+
+  const hydroponics = [
+    {crop:'Lettuce',    method:'Traditional', yieldPerSqm:3.20, waterUsageLiters:35.0, setupCostUsd:2.5},
+    {crop:'Lettuce',    method:'Hydroponic',  yieldPerSqm:8.50, waterUsageLiters:5.5,  setupCostUsd:18.0},
+    {crop:'Tomato',     method:'Traditional', yieldPerSqm:5.80, waterUsageLiters:60.0, setupCostUsd:3.2},
+    {crop:'Tomato',     method:'Hydroponic',  yieldPerSqm:16.4, waterUsageLiters:8.2,  setupCostUsd:22.0},
+    {crop:'Strawberry', method:'Traditional', yieldPerSqm:2.90, waterUsageLiters:45.0, setupCostUsd:4.0},
+    {crop:'Strawberry', method:'Hydroponic',  yieldPerSqm:7.80, waterUsageLiters:6.8,  setupCostUsd:25.0},
+    {crop:'Spinach',    method:'Traditional', yieldPerSqm:2.50, waterUsageLiters:28.0, setupCostUsd:2.0},
+    {crop:'Spinach',    method:'Hydroponic',  yieldPerSqm:6.20, waterUsageLiters:4.2,  setupCostUsd:16.5},
+    {crop:'Basil',      method:'Traditional', yieldPerSqm:1.80, waterUsageLiters:22.0, setupCostUsd:1.8},
+    {crop:'Basil',      method:'Hydroponic',  yieldPerSqm:4.90, waterUsageLiters:3.1,  setupCostUsd:14.0},
+    {crop:'Cucumber',   method:'Traditional', yieldPerSqm:7.20, waterUsageLiters:75.0, setupCostUsd:3.8},
+    {crop:'Cucumber',   method:'Hydroponic',  yieldPerSqm:19.5, waterUsageLiters:9.5,  setupCostUsd:24.0}
+  ];
+
+  return { status:'ok', cropProfits, hydroponics,
+           summary:{ totalCrops:4, yearMin:2010, yearMax:2022, totalRecords:52 } };
+}
+
+function renderDBKPIs(data) {
+  const s = data.summary;
+  const totalRevenue = data.cropProfits.reduce((a,r) => a+r.revenue, 0);
+  const totalProfit  = data.cropProfits.reduce((a,r) => a+r.profit, 0);
+  document.getElementById('db-kpi-strip').innerHTML = `
+    <div class="stat-card green">
+      <div class="stat-icon green"><i class="bi bi-database-fill"></i></div>
+      <div class="stat-value">${fmt.num(s.totalRecords)}</div>
+      <div class="stat-label">Total DB Records</div>
+    </div>
+    <div class="stat-card gold">
+      <div class="stat-icon gold"><i class="bi bi-cash-stack"></i></div>
+      <div class="stat-value">${(totalRevenue/1e9).toFixed(1)}<small style="font-size:1rem;">B</small></div>
+      <div class="stat-label">Cumulative Revenue (INR)</div>
+    </div>
+    <div class="stat-card blue">
+      <div class="stat-icon blue"><i class="bi bi-graph-up-arrow"></i></div>
+      <div class="stat-value">${(totalProfit/1e9).toFixed(1)}<small style="font-size:1rem;">B</small></div>
+      <div class="stat-label">Cumulative Profit (INR)</div>
+    </div>
+    <div class="stat-card earth">
+      <div class="stat-icon earth"><i class="bi bi-calendar-range"></i></div>
+      <div class="stat-value">${s.yearMin}–${s.yearMax}</div>
+      <div class="stat-label">Year Range Covered</div>
+    </div>`;
+}
+
+function buildProfitLineChart(rows) {
+  const years  = [...new Set(rows.map(r => r.year))].sort();
+  const cropMap = {};
+  rows.forEach(r => {
+    if (!cropMap[r.crop]) cropMap[r.crop] = {};
+    cropMap[r.crop][r.year] = r.profit;
+  });
+
+  const datasets = Object.keys(cropMap)
+    .filter(c => activeFilters.has(c))
+    .map(crop => ({
+      label: crop,
+      data: years.map(y => Math.round((cropMap[crop][y] || 0) / 1e6 * 100) / 100),
+      borderColor:     CHART_COLORS[crop]?.line || '#888',
+      backgroundColor: CHART_COLORS[crop]?.fill || 'rgba(0,0,0,.05)',
+      borderWidth: 2.5, pointRadius: 4, pointHoverRadius: 6,
+      tension: .4, fill: false
+    }));
+
+  if (charts.profit) charts.profit.destroy();
+  charts.profit = new Chart(document.getElementById('profitLineChart'), {
+    type: 'line',
+    data: { labels: years, datasets },
+    options: {
+      ...CHART_DEFAULTS,
+      plugins: {
+        ...CHART_DEFAULTS.plugins,
+        tooltip: {
+          callbacks: {
+            // UPDATED TO INR
+            label: ctx => ` ${ctx.dataset.label}: ₹${ctx.parsed.y.toFixed(2)}M profit`
+          }
+        }
+      },
+      scales: {
+        x: { ...CHART_DEFAULTS.scales.x, title: { display:true, text:'Year', color:'#6B5C42', font:{family:'DM Sans'} } },
+        // UPDATED TO INR
+        y: { ...CHART_DEFAULTS.scales.y, title: { display:true, text:'Profit (INR Millions)', color:'#6B5C42', font:{family:'DM Sans'} },
+             ticks: { ...CHART_DEFAULTS.scales.y.ticks, callback: v => '₹' + v + 'M' } }
+      }
+    }
+  });
+}
+
+function buildHydroCharts(rows) {
+  const crops = [...new Set(rows.map(r => r.crop))];
+  const trad  = rows.filter(r => r.method === 'Traditional');
+  const hydro = rows.filter(r => r.method === 'Hydroponic');
+
+  const get = (arr, crop, field) => (arr.find(r=>r.crop===crop)||{})[field] || 0;
+
+  if (charts.yield) charts.yield.destroy();
+  charts.yield = new Chart(document.getElementById('yieldBarChart'), {
+    type: 'bar',
+    data: {
+      labels: crops,
+      datasets: [
+        { label: 'Traditional (kg/m²)', data: crops.map(c => get(trad,c,'yieldPerSqm')),
+          backgroundColor: 'rgba(74,53,32,.7)', borderRadius: 4 },
+        { label: 'Hydroponic (kg/m²)',  data: crops.map(c => get(hydro,c,'yieldPerSqm')),
+          backgroundColor: 'rgba(107,163,190,.8)', borderRadius: 4 }
+      ]
+    },
+    options: {
+      ...CHART_DEFAULTS,
+      plugins: { ...CHART_DEFAULTS.plugins, tooltip: {
+        callbacks: { label: ctx => ` ${ctx.dataset.label}: ${ctx.parsed.y} kg/m²` }
+      }},
+      scales: {
+        x: CHART_DEFAULTS.scales.x,
+        y: { ...CHART_DEFAULTS.scales.y,
+             title: { display:true, text:'Yield (kg per m²)', color:'#6B5C42', font:{family:'DM Sans'} } }
+      }
+    }
+  });
+
+  if (charts.water) charts.water.destroy();
+  charts.water = new Chart(document.getElementById('waterBarChart'), {
+    type: 'bar',
+    data: {
+      labels: crops,
+      datasets: [
+        { label: 'Traditional (L/kg)', data: crops.map(c => get(trad,c,'waterUsageLiters')),
+          backgroundColor: 'rgba(212,168,67,.7)', borderRadius: 4 },
+        { label: 'Hydroponic (L/kg)',  data: crops.map(c => get(hydro,c,'waterUsageLiters')),
+          backgroundColor: 'rgba(90,147,72,.75)', borderRadius: 4 }
+      ]
+    },
+    options: {
+      ...CHART_DEFAULTS,
+      plugins: { ...CHART_DEFAULTS.plugins, tooltip: {
+        callbacks: { label: ctx => ` ${ctx.dataset.label}: ${ctx.parsed.y} L/kg` }
+      }},
+      scales: {
+        x: CHART_DEFAULTS.scales.x,
+        y: { ...CHART_DEFAULTS.scales.y,
+             title: { display:true, text:'Water Usage (L per kg produced)', color:'#6B5C42', font:{family:'DM Sans'} } }
+      }
+    }
+  });
+}
+
+function buildProfitTable(rows) {
+  allProfitRows = rows;
+  renderTable(rows);
+
+  document.getElementById('table-search').addEventListener('input', e => {
+    const q = e.target.value.toLowerCase();
+    renderTable(allProfitRows.filter(r =>
+      r.crop.toLowerCase().includes(q) ||
+      r.state.toLowerCase().includes(q) ||
+      String(r.year).includes(q)
+    ));
+  });
+}
+
+function renderTable(rows) {
+  const tbody = document.getElementById('profit-table-body');
+  tbody.innerHTML = rows.map(r => {
+    const cls = r.crop.toLowerCase();
+    const pos = r.profit >= 0;
+    return `<tr>
+      <td><code style="font-family:'DM Mono',monospace;font-size:.8rem;">${r.year}</code></td>
+      <td><span class="badge-crop ${cls}">${r.crop}</span></td>
+      <td style="color:var(--text-muted);">${r.state}</td>
+      <td>${fmt.num(r.production)}</td>
+      <td>${fmt.money(r.revenue)}</td>
+      <td>${fmt.money(r.totalCost)}</td>
+      <td class="${pos ? 'profit-positive' : 'profit-negative'}">${pos?'+':''}${fmt.money(r.profit)}</td>
+      <td>${r.yieldValue.toFixed(2)}</td>
+    </tr>`;
+  }).join('');
+}
+
+function buildCropFilters(rows) {
+  const crops = [...new Set(rows.map(r => r.crop))];
+  const container = document.getElementById('profit-filters');
+  container.innerHTML = crops.map(c =>
+    `<button class="filter-pill active" data-crop="${c}">${c}</button>`
+  ).join('');
+
+  container.querySelectorAll('.filter-pill').forEach(btn => {
+    btn.addEventListener('click', () => {
+      const crop = btn.dataset.crop;
+      if (activeFilters.has(crop)) {
+        if (activeFilters.size === 1) return; 
+        activeFilters.delete(crop);
+        btn.classList.remove('active');
+      } else {
+        activeFilters.add(crop);
+        btn.classList.add('active');
+      }
+      buildProfitLineChart(analyticsData.cropProfits);
+    });
+  });
+}
+
+document.addEventListener('DOMContentLoaded', () => {
+  startClock();
+  initMarketTicker();
+  renderCropGrid();
+  loadWeather();
+  loadNews();
+});
+</script>
+</body>
+</html>
