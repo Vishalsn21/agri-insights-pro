@@ -1,6 +1,6 @@
 # AgriInsights
 
-A Java web application for agricultural analytics.
+AgriInsights is a Java-based web application designed for agricultural data analysis and decision support. It provides a centralized platform to analyze seasonal crop yields, compare agricultural performance, track commodity prices, view regional weather information, and estimate profitability through interactive dashboards. The application uses Java Servlets, JDBC, MySQL, JavaScript, Bootstrap, and Chart.js to provide a responsive and data-driven experience. It is designed to transform agricultural records into meaningful visual insights that can help users better understand yield trends, costs, revenue, and overall financial performance.
 
 ## Setup
 
